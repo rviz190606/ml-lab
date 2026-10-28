@@ -1,22 +1,17 @@
-"""TriMap: Large-scale Dimensionality Reduction Using Triplets (Amid & Warmuth, 2019).
+"""
 
-From-scratch implementation following Section 3 of the paper (including the
-"[Update]" defaults of v2: m=12, m'=4, r=3, tempered-log weights with t=0.5).
+A brief overview of the steps: 
 
-Pipeline
---------
 1. Preprocess: optionally reduce to 100 dims with PCA, center and rescale.
-2. Approximate k-NN search; compute local scales sigma_i (mean distance to the
-   4th-6th neighbours) and the scaled distances d2_ij = ||x_i - x_j||^2 / (sigma_i sigma_j).
+
+2. NN search. Here we use PyNNDescent (approximate) for large datasets and sklearn (exact) for small ones.
+
 3. Sample triplets (i, j, k):
-     * m nearest neighbours j of i  x  m' "outliers" k sampled uniformly among
-       points farther from i than j      -> m * m' triplets per point
-     * r random triplets per point, ordered by their (scaled) distance to i.
-4. Weights  w~_ijk = d2_ik - d2_ij,  w_ijk = log_t(1 + w~_ijk - min w~).
-5. Initialise with (scaled) PCA and minimise
-       L = sum_{(i,j,k)} w_ijk * s(y_i, y_k) / (s(y_i, y_j) + s(y_i, y_k)),
-       s(y_i, y_j) = (1 + ||y_i - y_j||^2)^-1
-   by full-batch gradient descent with momentum and delta-bar-delta gains.
+     
+4. Compute the Weights
+
+5. Initialise with (scaled) PCA and minimise the loss with gradient descent
+       
 """
 
 import time
@@ -25,9 +20,7 @@ import numba
 import numpy as np
 
 
-# ---------------------------------------------------------------------------
-# Utilities
-# ---------------------------------------------------------------------------
+# Some helper functions we will need: 
 
 def tempered_log(u, t):
     """log_t(u) = (u^(1-t) - 1) / (1 - t); recovers log(u) as t -> 1."""
@@ -50,9 +43,7 @@ def pca(X, n_components):
 
 def knn_search(X, k, seed, verbose=False):
     """k nearest neighbours of every point, excluding the point itself.
-
-    Exact brute-force search for small datasets, PyNNDescent (approximate)
-    otherwise -- the paper uses ANNOY, the official JAX version PyNNDescent.
+    Exact brute-force search for small datasets, PyNNDescent for bigger ones (approximate)
     """
     n = X.shape[0]
     k = min(k, n - 1)
@@ -75,9 +66,6 @@ def knn_search(X, k, seed, verbose=False):
     return out_idx, out_dist
 
 
-# ---------------------------------------------------------------------------
-# Triplet sampling (numba)
-# ---------------------------------------------------------------------------
 
 @numba.njit(cache=True)
 def _sq_dist(X, i, j):
@@ -90,12 +78,6 @@ def _sq_dist(X, i, j):
 
 @numba.njit(parallel=True, cache=True)
 def _sample_knn_triplets(X, nbrs, sig, n_inliers, n_outliers, seed, triplets, weights):
-    """For each i: n_inliers nearest neighbours j, n_outliers random k per j.
-
-    k is rejected if it is i itself or one of i's (extended) neighbours, which
-    ensures k is farther from i than j (w.r.t. the candidate list).
-    Fills triplets (n*m*m', 3) and their raw weights d2_ik - d2_ij in place.
-    """
     n = X.shape[0]
     n_cand = nbrs.shape[1]
     per_point = n_inliers * n_outliers
@@ -151,9 +133,7 @@ def _sample_random_triplets(X, sig, n_random, seed, triplets, weights):
             weights[p] = d_ik - d_ij
 
 
-# ---------------------------------------------------------------------------
-# Loss and gradient (numba)
-# ---------------------------------------------------------------------------
+# The loss and gradients:
 
 @numba.njit(parallel=True, cache=True)
 def trimap_loss_grad_parallel(Y, triplets, weights):
@@ -181,14 +161,8 @@ def trimap_loss_grad(Y, triplets, weights):
 
 @numba.njit(cache=True)
 def _accumulate(Y, triplets, weights, grad):
-    """Loss sum_t w_t * s_ik / (s_ij + s_ik) and its gradient w.r.t. Y.
-
-    With a = s_ij, b = s_ik, s = 1 / (1 + ||.||^2):
-        dL/dy_i =  2 w a b / (a+b)^2 * [a (y_i - y_j) - b (y_i - y_k)]
-        dL/dy_j = -2 w a b / (a+b)^2 *  a (y_i - y_j)
-        dL/dy_k =  2 w a b / (a+b)^2 *  b (y_i - y_k)
-    Adds the gradient into `grad` in place; returns the loss and the number
-    of violated triplets (s_ij < s_ik).
+    """
+        Computes the loss function and its gradients
     """
     dim = Y.shape[1]
     loss = 0.0
