@@ -1,0 +1,12 @@
+
+=== covertype: n=581012, d=54 ===
+TriMap  time=   295.3s  NN=0.716  GS=0.949  PCC=0.746
+UMAP    time=  1720.7s  NN=0.828  GS=0.875  PCC=0.462
+PCA     time=     1.6s  NN=0.482  GS=1.000  PCC=0.170
+
+           nn_acc                 gs         ...    pcc        seconds               
+method       PCA TriMap   UMAP  PCA TriMap  ... TriMap   UMAP     PCA TriMap    UMAP
+dataset                                     ...                                     
+covertype  0.482  0.716  0.828  1.0  0.949  ...  0.746  0.462     1.6  295.3  1720.7
+
+[1 rows x 12 columns]

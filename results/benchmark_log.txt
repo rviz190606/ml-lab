@@ -1,0 +1,41 @@
+
+=== coil20: n=1440, d=16384 ===
+t-SNE   time=     5.2s  NN=1.000  GS=0.774  PCC=0.521
+UMAP    time=    19.0s  NN=0.915  GS=0.701  PCC=0.289
+TriMap  time=     3.0s  NN=0.873  GS=0.789  PCC=0.340
+PCA     time=     0.6s  NN=0.667  GS=1.000  PCC=0.729
+
+=== usps: n=9298, d=256 ===
+t-SNE   time=    14.1s  NN=0.971  GS=0.840  PCC=0.660
+UMAP    time=    11.8s  NN=0.955  GS=0.830  PCC=0.630
+TriMap  time=     2.9s  NN=0.946  GS=0.877  PCC=0.633
+PCA     time=     0.0s  NN=0.482  GS=1.000  PCC=0.791
+
+=== newsgroups20: n=18846, d=100 ===
+t-SNE   time=    36.1s  NN=0.490  GS=0.972  PCC=0.410
+UMAP    time=     1.8s  NN=0.375  GS=0.956  PCC=0.550
+TriMap  time=     8.3s  NN=0.346  GS=0.959  PCC=0.577
+PCA     time=     0.0s  NN=0.166  GS=1.000  PCC=0.364
+
+=== mnist: n=70000, d=784 ===
+t-SNE   time=   162.5s  NN=0.971  GS=0.917  PCC=0.583
+UMAP    time=    12.3s  NN=0.951  GS=0.920  PCC=0.616
+TriMap  time=    30.5s  NN=0.943  GS=0.935  PCC=0.607
+PCA     time=     1.1s  NN=0.380  GS=1.000  PCC=0.690
+
+=== fashion_mnist: n=70000, d=784 ===
+t-SNE   time=   156.9s  NN=0.833  GS=0.784  PCC=0.715
+UMAP    time=    15.7s  NN=0.728  GS=0.790  PCC=0.699
+TriMap  time=    31.0s  NN=0.677  GS=0.899  PCC=0.774
+PCA     time=     1.1s  NN=0.454  GS=1.000  PCC=0.902
+
+               nn_acc                       ... seconds                    
+method           PCA TriMap   UMAP  t-SNE  ...     PCA TriMap  UMAP  t-SNE
+dataset                                    ...                            
+coil20         0.667  0.873  0.915  1.000  ...     0.6    3.0  19.0    5.2
+fashion_mnist  0.454  0.677  0.728  0.833  ...     1.1   31.0  15.7  156.9
+mnist          0.380  0.943  0.951  0.971  ...     1.1   30.5  12.3  162.5
+newsgroups20   0.166  0.346  0.375  0.490  ...     0.0    8.3   1.8   36.1
+usps           0.482  0.946  0.955  0.971  ...     0.0    2.9  11.8   14.1
+
+[5 rows x 16 columns]

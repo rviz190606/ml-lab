@@ -1,0 +1,4 @@
+dataset,n,method,seconds,nn_acc,gs,pcc
+covertype,581012,TriMap,295.3,0.716,0.949,0.746
+covertype,581012,UMAP,1720.7,0.828,0.875,0.462
+covertype,581012,PCA,1.6,0.482,1.0,0.17
